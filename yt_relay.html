@@ -4,7 +4,7 @@
   YouTube refuses to play embedded videos on a page opened from disk (file://, "Error 153").
   Hosting this one file on any https website (e.g. GitHub Pages) gives the player a web
   address, so the dashboards can show it inside their video box:
-      https://<your-site>/yt_relay.html?v=<11-character video id>&shape=wide|tall
+      https://<your-site>/yt_relay.html?v=<11-character video id>&shape=wide|tall[&start=<seconds>]
   Then set YOUTUBE_RELAY_URL=https://<your-site>/yt_relay.html in the app's .env.
 -->
 <html lang="en">
@@ -24,6 +24,7 @@
     // Only a plain 11-character YouTube id is accepted; anything else shows a message.
     const query = new URLSearchParams(location.search);
     const id = query.get('v') || '', tiktok = query.get('t') || '';
+    const start = /^\d{1,6}$/.test(query.get('start') || '') ? query.get('start') : '';   // seconds to start at (optional)
     if (/^\d{8,25}$/.test(tiktok)) {   // TikTok's own player, given the web address it needs
         const frame = document.createElement('iframe');
         frame.src = `https://www.tiktok.com/player/v1/${tiktok}?autoplay=1&loop=1&rel=0`;
@@ -34,7 +35,7 @@
         document.body.appendChild(frame);
     } else if (/^[\w-]{11}$/.test(id)) {
         const frame = document.createElement('iframe');
-        frame.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&loop=1&playlist=${id}`;
+        frame.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&loop=1&playlist=${id}${start ? `&start=${start}` : ''}`;
         frame.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
         frame.allowFullscreen = true;
         frame.referrerPolicy = 'strict-origin-when-cross-origin';
